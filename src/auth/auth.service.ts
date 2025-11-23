@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
-import { CreateUserDto } from '../users/dto/create-user.dto';
-import { UserPayload, GoogleUserProfile } from './types/auth.types';
-import { User } from '../users/entities/user.entity';
+
+import { GoogleUserProfile, UserPayload } from '@auth/types/auth.types';
+import { CreateUserDto } from '@users/dto/create-user.dto';
+import { User } from '@users/entities/user.entity';
+import { UsersService } from '@users/users.service';
 
 @Injectable()
 export class AuthService {
@@ -26,9 +27,8 @@ export class AuthService {
   async findOrCreateGoogleUser(profile: GoogleUserProfile): Promise<User> {
     return this.usersService.findOrCreateGoogleUser({
       id: profile.googleId,
-      emails: [{ value: profile.email }],
+      email: profile.email,
       displayName: profile.name,
-      photos: profile.avatar ? [{ value: profile.avatar }] : undefined,
     });
   }
 }

@@ -1,3 +1,5 @@
+import type { Request } from 'express';
+
 export interface UserPayload {
   id: string;
   email: string;
@@ -5,19 +7,17 @@ export interface UserPayload {
 
 export interface GoogleProfile {
   id: string;
-  emails: Array<{ value: string }>;
+  email: string;
   name: {
     givenName: string;
     familyName: string;
   };
-  photos?: Array<{ value: string }>;
 }
 
 export interface GoogleUserProfile {
   googleId: string;
   email: string;
   name: string;
-  avatar?: string;
 }
 
 export interface JwtPayload {

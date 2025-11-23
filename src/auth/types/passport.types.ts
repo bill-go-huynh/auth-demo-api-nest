@@ -1,11 +1,11 @@
 import { UserPayload } from './auth.types';
 
 export interface SerializeDone {
-  (err: Error | null, user: UserPayload): void;
+  (err: Error | null, user: UserPayload | null): void;
 }
 
 export interface DeserializeDone {
-  (err: Error | null, payload: UserPayload): void;
+  (err: Error | null, payload: UserPayload | null): void;
 }
 
 export function createError(message: string): Error {

@@ -23,12 +23,115 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+**Auth Demo API** is a comprehensive NestJS application demonstrating dual authentication strategies (JWT and Session-based) with Google OAuth integration. This project serves as a reference implementation for building secure authentication systems with multiple auth methods.
+
+### Key Features
+
+- **Dual Authentication Methods**:
+  - **JWT Authentication**: Stateless token-based authentication with access/refresh token pattern
+  - **Session Authentication**: Stateful cookie-based authentication with express-session
+
+- **OAuth Integration**:
+  - Google OAuth 2.0 support for both JWT and Session flows
+  - Automatic user creation and account linking
+
+- **User Management**:
+  - User registration and login
+  - Password hashing with bcrypt (automatic via entity hooks)
+  - User profile management
+
+- **Tasks Management**:
+  - CRUD operations for user tasks
+  - Composite authentication guard supporting both JWT and Session
+
+- **API Documentation**:
+  - Swagger/OpenAPI documentation at `/api`
+  - Complete endpoint documentation with examples
+
+### Architecture
+
+The application follows a modular architecture:
+
+```
+src/
+├── auth/              # Authentication module
+│   ├── guards/        # Authentication guards (JWT, Session, Composite)
+│   ├── strategies/    # Passport strategies (JWT, Local, OAuth, Session)
+│   ├── dto/          # Data Transfer Objects
+│   └── types/        # TypeScript type definitions
+├── users/            # User management module
+├── tasks/            # Tasks management module
+├── config/           # Configuration module
+└── database/         # Database configuration
+```
+
+### API Endpoints
+
+#### Authentication Endpoints
+
+**JWT Authentication** (`/auth/jwt`):
+
+- `POST /auth/jwt/login` - Login with email/password, receive JWT tokens
+- `POST /auth/jwt/refresh` - Refresh access token
+- `GET /auth/jwt/me` - Get current user profile
+- `GET /auth/jwt/google` - Initiate Google OAuth (JWT flow)
+- `GET /auth/jwt/google/callback` - Google OAuth callback (returns tokens in query params)
+
+**Session Authentication** (`/auth/session`):
+
+- `POST /auth/session/register` - Register new user
+- `POST /auth/session/login` - Login with email/password (creates session)
+- `POST /auth/session/logout` - Logout and destroy session
+- `GET /auth/session/me` - Get current user profile
+- `GET /auth/session/google` - Initiate Google OAuth (Session flow)
+- `GET /auth/session/google/callback` - Google OAuth callback (sets session cookie)
+
+#### Protected Endpoints
+
+**Tasks** (`/tasks`) - Supports both JWT and Session:
+
+- `POST /tasks` - Create a new task
+- `GET /tasks` - Get all tasks for current user
+- `GET /tasks/:id` - Get a task by ID
+- `PATCH /tasks/:id` - Update a task
+- `DELETE /tasks/:id` - Delete a task
+
+**Users** (`/users`) - Supports both JWT and Session:
+
+- `GET /users/me` - Get current user information
 
 ## Project setup
 
 ```bash
 $ pnpm install
+```
+
+## Database Setup (Docker)
+
+Start PostgreSQL database using Docker Compose:
+
+```bash
+$ docker-compose up -d
+```
+
+This will start a PostgreSQL container with:
+
+- **Host**: `localhost`
+- **Port**: `5432`
+- **Username**: `postgres`
+- **Password**: `postgres`
+- **Database**: `auth_demo`
+
+To stop the database:
+
+```bash
+$ docker-compose down
+```
+
+To stop and remove volumes (delete all data):
+
+```bash
+$ docker-compose down -v
 ```
 
 ## Environment Configuration
@@ -53,8 +156,11 @@ $ cp .env.example .env
 
 - `NODE_ENV` - Environment (development, production, test) - Default: `development`
 - `PORT` - Server port - Default: `8080`
-- `DB_URL` - PostgreSQL connection URL (or use individual DB\_\* settings)
-- `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DATABASE` - Individual database settings
+- `DB_HOST` - Database host - Default: `localhost` (use `postgres` if connecting from Docker network)
+- `DB_PORT` - Database port - Default: `5432`
+- `DB_USERNAME` - Database username - Default: `postgres`
+- `DB_PASSWORD` - Database password - Default: `postgres`
+- `DB_DATABASE` - Database name - Default: `auth_demo`
 - `JWT_ACCESS_EXPIRES_IN` - Access token expiration - Default: `15m`
 - `JWT_REFRESH_EXPIRES_IN` - Refresh token expiration - Default: `7d`
 - `CORS_ORIGINS` - Comma-separated allowed origins - Default: `http://localhost:3000,http://localhost:3001`
@@ -72,6 +178,21 @@ $ pnpm run start:dev
 $ pnpm run start:prod
 ```
 
+## API Documentation
+
+Once the application is running, access the Swagger documentation at:
+
+```
+http://localhost:8080/api
+```
+
+The Swagger UI provides:
+
+- Complete API endpoint documentation
+- Interactive API testing
+- Authentication support (JWT Bearer token and Session cookie)
+- Request/response examples
+
 ## Run tests
 
 ```bash
@@ -84,6 +205,37 @@ $ pnpm run test:e2e
 # test coverage
 $ pnpm run test:cov
 ```
+
+## Technology Stack
+
+- **Framework**: NestJS (Node.js)
+- **Database**: PostgreSQL with TypeORM
+- **Authentication**: Passport.js (Local, JWT, Google OAuth)
+- **Session Management**: express-session
+- **Validation**: class-validator, class-transformer
+- **API Documentation**: Swagger/OpenAPI
+- **Password Hashing**: bcrypt
+
+## Authentication Flow
+
+### JWT Flow
+
+1. User logs in → receives `accessToken` and `refreshToken`
+2. Client stores tokens (localStorage, cookies, etc.)
+3. Each request includes `Authorization: Bearer <accessToken>` header
+4. When access token expires, use `refreshToken` to get new access token
+
+### Session Flow
+
+1. User logs in → server creates session and sets cookie
+2. Browser automatically sends session cookie with each request
+3. Server validates session on each request
+4. User logs out → server destroys session
+
+### Google OAuth Flow
+
+- **JWT**: After Google authentication, tokens are returned in redirect URL query params
+- **Session**: After Google authentication, session cookie is automatically set
 
 ## Deployment
 

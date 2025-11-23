@@ -1,4 +1,4 @@
-import { UserPayload, JwtPayload, GoogleProfile } from './auth.types';
+import { GoogleProfile, JwtPayload, UserPayload } from './auth.types';
 
 export function isUserPayload(value: unknown): value is UserPayload {
   if (typeof value !== 'object' || value === null) {
@@ -17,12 +17,12 @@ export function isGoogleProfile(value: unknown): value is GoogleProfile {
 
   const profile = value as Record<string, unknown>;
   const id = profile.id;
-  const emails = profile.emails;
+  const email = profile.email;
   const name = profile.name;
 
   if (
     typeof id !== 'string' ||
-    !Array.isArray(emails) ||
+    typeof email !== 'string' ||
     typeof name !== 'object' ||
     name === null
   ) {
@@ -32,14 +32,8 @@ export function isGoogleProfile(value: unknown): value is GoogleProfile {
   const nameObj = name as Record<string, unknown>;
   const givenName = nameObj.givenName;
   const familyName = nameObj.familyName;
-  const firstEmail = emails[0] as { value?: unknown } | undefined;
 
-  return (
-    typeof givenName === 'string' &&
-    typeof familyName === 'string' &&
-    emails.length > 0 &&
-    typeof firstEmail?.value === 'string'
-  );
+  return typeof givenName === 'string' && typeof familyName === 'string' && email.length > 0;
 }
 
 export function isJwtPayload(value: unknown): value is JwtPayload {

@@ -1,7 +1,9 @@
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as session from 'express-session';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import session from 'express-session';
+
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -22,16 +24,21 @@ async function bootstrap() {
   });
 
   // Session configuration
+  const sessionSecret = configService.get<string>('SESSION_SECRET');
+  if (!sessionSecret) {
+    throw new Error('SESSION_SECRET is required but not provided');
+  }
+
   app.use(
     session({
-      secret: configService.get<string>('SESSION_SECRET'),
+      secret: sessionSecret,
       resave: false,
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
         secure: configService.get<string>('NODE_ENV') === 'production',
         sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        maxAge: 24 * 60 * 60 * 1000,
       },
     }),
   );
@@ -45,9 +52,45 @@ async function bootstrap() {
     }),
   );
 
+  // Swagger configuration
+  const config = new DocumentBuilder()
+    .setTitle('Auth Demo API')
+    .setDescription('Authentication and Tasks Management API with Session and JWT support')
+    .setVersion('1.0')
+    .addTag('auth-session', 'Session-based authentication endpoints')
+    .addTag('auth-jwt', 'JWT-based authentication endpoints')
+    .addTag('tasks-session', 'Tasks management with session authentication')
+    .addTag('tasks-jwt', 'Tasks management with JWT authentication')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
+    .addCookieAuth('connect.sid', {
+      type: 'apiKey',
+      in: 'cookie',
+      name: 'connect.sid',
+      description: 'Session cookie for session-based authentication',
+    })
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
+
   const port = configService.get<number>('PORT', 8080);
   await app.listen(port);
   const logger = new Logger('Bootstrap');
   logger.log(`Application is running on: http://localhost:${port}`);
+  logger.log(`Swagger documentation available at: http://localhost:${port}/api`);
 }
 void bootstrap();

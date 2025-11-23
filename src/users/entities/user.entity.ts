@@ -1,12 +1,16 @@
+import * as bcrypt from 'bcrypt';
 import {
-  Entity,
-  PrimaryGeneratedColumn,
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
+  Entity,
   OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { Task } from '../../tasks/entities/task.entity';
+
+import { Task } from '@tasks/entities/task.entity';
 
 @Entity('users')
 export class User {
@@ -25,9 +29,6 @@ export class User {
   @Column({ nullable: true })
   googleId: string;
 
-  @Column({ nullable: true })
-  avatar: string;
-
   @OneToMany(() => Task, (task) => task.user)
   tasks: Task[];
 
@@ -36,4 +37,12 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  async hashPassword(): Promise<void> {
+    if (this.password && !this.password.startsWith('$2b$')) {
+      this.password = await bcrypt.hash(this.password, 10);
+    }
+  }
 }

@@ -1,15 +1,17 @@
-import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { User } from './entities/user.entity';
+import { DataSource, Repository } from 'typeorm';
+
 import { CreateUserDto } from './dto/create-user.dto';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -21,24 +23,12 @@ export class UsersService {
       throw new ConflictException('User with this email already exists');
     }
 
-    const hashedPassword = createUserDto.password
-      ? await bcrypt.hash(createUserDto.password, 10)
-      : null;
-
-    const user = this.userRepository.create({
-      ...createUserDto,
-      password: hashedPassword,
-    });
-
+    const user = this.userRepository.create(createUserDto);
     return this.userRepository.save(user);
   }
 
   async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { email } });
-  }
-
-  async findByGoogleId(googleId: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { googleId } });
   }
 
   async findById(id: string): Promise<User | null> {
@@ -47,35 +37,52 @@ export class UsersService {
 
   async findOrCreateGoogleUser(profile: {
     id: string;
-    emails: Array<{ value: string }>;
+    email: string;
     displayName: string;
-    photos?: Array<{ value: string }>;
   }): Promise<User> {
-    const email = profile.emails[0]?.value;
-    if (!email) {
+    if (!profile.id) {
+      throw new BadRequestException('Google ID not found in profile');
+    }
+    if (!profile.email) {
       throw new BadRequestException('Email not found in Google profile');
     }
-
-    let user = await this.findByGoogleId(profile.id);
-    if (user) {
-      return user;
+    if (!profile.displayName) {
+      throw new BadRequestException('Display name not found in Google profile');
     }
 
-    user = await this.findByEmail(email);
-    if (user) {
-      user.googleId = profile.id;
-      if (profile.photos?.[0]?.value) {
-        user.avatar = profile.photos[0].value;
+    return this.dataSource.transaction(async (manager) => {
+      const userRepository = manager.getRepository(User);
+
+      let user = await userRepository.findOne({
+        where: { googleId: profile.id },
+      });
+
+      if (user) {
+        return user;
       }
-      return this.userRepository.save(user);
-    }
 
-    return this.create({
-      email,
-      name: profile.displayName,
-      googleId: profile.id,
-      avatar: profile.photos?.[0]?.value || null,
-      password: null,
+      user = await userRepository.findOne({
+        where: { email: profile.email },
+      });
+
+      if (user) {
+        if (user.googleId && user.googleId !== profile.id) {
+          throw new ConflictException(
+            'Email is already associated with a different Google account',
+          );
+        }
+        user.googleId = profile.id;
+        return userRepository.save(user);
+      }
+
+      const createUserData: CreateUserDto = {
+        email: profile.email,
+        name: profile.displayName,
+        googleId: profile.id,
+      };
+
+      const newUser = userRepository.create(createUserData);
+      return userRepository.save(newUser);
     });
   }
 

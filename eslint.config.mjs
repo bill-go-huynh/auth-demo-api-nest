@@ -3,6 +3,7 @@ import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 
 export default tseslint.config(
   {
@@ -12,6 +13,9 @@ export default tseslint.config(
   ...tseslint.configs.recommendedTypeChecked,
   eslintPluginPrettierRecommended,
   {
+    plugins: {
+      'simple-import-sort': simpleImportSort,
+    },
     languageOptions: {
       globals: {
         ...globals.node,
@@ -30,6 +34,23 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
+      'simple-import-sort/imports': [
+        'error',
+        {
+          groups: [
+            // External packages (libs) - @nestjs, @types, express, etc. (non-type imports)
+            ['^@nestjs', '^@types', '^@', '^[a-z]'],
+            ['^type @nestjs', '^type @types', '^type @', '^type [a-z]'],
+            // Internal app imports (alias paths) - @auth, @users, @tasks, etc. (non-type imports)
+            ['^@auth', '^@users', '^@tasks', '^@config', '^@database'],
+            ['^type @auth', '^type @users', '^type @tasks', '^type @config', '^type @database'],
+            // Relative imports (same folder or parent) (non-type imports)
+            ['^\\.\\.?/'],
+            ['^type \\.\\.?/'],
+          ],
+        },
+      ],
+      'simple-import-sort/exports': 'error',
     },
   },
   {

@@ -1,13 +1,16 @@
-import { Request } from 'express';
-import { UserPayload, GoogleUserProfile } from './auth.types';
+import type { Request } from 'express';
 
-export interface SessionRequest extends Request {
+import type { GoogleUserProfile, UserPayload } from './auth.types';
+
+export interface SessionRequest extends Omit<Request, 'session'> {
   user?: UserPayload;
-  login: (user: UserPayload, callback: (err?: Error) => void) => void;
+  login: {
+    (user: UserPayload, callback: (err?: Error) => void): void;
+    (user: UserPayload, options: unknown, callback: (err?: Error) => void): void;
+  };
   session: {
     destroy: (callback: (err?: Error) => void) => void;
   };
-  isAuthenticated?: () => boolean;
 }
 
 export interface GoogleOAuthRequest extends Request {
