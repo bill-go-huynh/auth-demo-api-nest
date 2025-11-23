@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as session from 'express-session';
 import { AppModule } from './app.module';
@@ -29,7 +29,7 @@ async function bootstrap() {
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: configService.get<string>('NODE_ENV') === 'production',
         sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
       },
@@ -47,6 +47,7 @@ async function bootstrap() {
 
   const port = configService.get<number>('PORT', 8080);
   await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
+  const logger = new Logger('Bootstrap');
+  logger.log(`Application is running on: http://localhost:${port}`);
 }
 void bootstrap();

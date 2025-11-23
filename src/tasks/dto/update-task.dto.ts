@@ -1,8 +1,10 @@
-import { IsString, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, MinLength, MaxLength } from 'class-validator';
 
 export class UpdateTaskDto {
   @IsString()
   @IsOptional()
+  @MinLength(1)
+  @MaxLength(255)
   title?: string;
 
   @IsString()

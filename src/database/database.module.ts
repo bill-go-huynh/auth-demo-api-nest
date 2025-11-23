@@ -15,7 +15,7 @@ import { Task } from '../tasks/entities/task.entity';
             type: 'postgres',
             url: dbUrl,
             entities: [User, Task],
-            synchronize: true,
+            synchronize: configService.get<string>('NODE_ENV') !== 'production',
           };
         }
         return {
@@ -26,7 +26,7 @@ import { Task } from '../tasks/entities/task.entity';
           password: configService.get<string>('DB_PASSWORD', 'postgres'),
           database: configService.get<string>('DB_DATABASE', 'auth_demo'),
           entities: [User, Task],
-          synchronize: true,
+          synchronize: configService.get<string>('NODE_ENV') !== 'production',
         };
       },
       inject: [ConfigService],

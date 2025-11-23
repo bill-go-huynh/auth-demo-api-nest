@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -53,7 +53,7 @@ export class UsersService {
   }): Promise<User> {
     const email = profile.emails[0]?.value;
     if (!email) {
-      throw new Error('Email not found in Google profile');
+      throw new BadRequestException('Email not found in Google profile');
     }
 
     let user = await this.findByGoogleId(profile.id);
