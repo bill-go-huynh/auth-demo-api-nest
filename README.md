@@ -31,6 +31,34 @@
 $ pnpm install
 ```
 
+## Environment Configuration
+
+Copy `.env.example` to `.env` and fill in the required values:
+
+```bash
+$ cp .env.example .env
+```
+
+### Required Environment Variables
+
+- `SESSION_SECRET` - Secret for express-session (generate with: `openssl rand -base64 32`)
+- `JWT_ACCESS_SECRET` - Secret for JWT access tokens (generate with: `openssl rand -base64 32`)
+- `JWT_REFRESH_SECRET` - Secret for JWT refresh tokens (generate with: `openssl rand -base64 32`)
+- `GOOGLE_CLIENT_ID` - Google OAuth Client ID from [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+- `GOOGLE_CLIENT_SECRET` - Google OAuth Client Secret
+- `GOOGLE_SESSION_REDIRECT_URL` - Redirect URL for session client (default: `http://localhost:3000/oauth/callback`)
+- `GOOGLE_JWT_REDIRECT_URL` - Redirect URL for JWT client (default: `http://localhost:3001/oauth/callback`)
+
+### Optional Environment Variables
+
+- `NODE_ENV` - Environment (development, production, test) - Default: `development`
+- `PORT` - Server port - Default: `8080`
+- `DB_URL` - PostgreSQL connection URL (or use individual DB\_\* settings)
+- `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DATABASE` - Individual database settings
+- `JWT_ACCESS_EXPIRES_IN` - Access token expiration - Default: `15m`
+- `JWT_REFRESH_EXPIRES_IN` - Refresh token expiration - Default: `7d`
+- `CORS_ORIGINS` - Comma-separated allowed origins - Default: `http://localhost:3000,http://localhost:3001`
+
 ## Compile and run the project
 
 ```bash
