@@ -12,15 +12,7 @@ export class SessionStrategy extends PassportStrategy(Strategy, 'session') {
       return req.user;
     }
 
-    // If not, manually deserialize from session
-    // Passport stores serialized user in req.session.passport.user
     const session = req.session as { passport?: { user?: UserPayload } };
-    if (session?.passport?.user) {
-      // Set req.user for consistency
-      req.user = session.passport.user;
-      return session.passport.user;
-    }
-
-    return null;
+    return session?.passport?.user || null;
   }
 }
