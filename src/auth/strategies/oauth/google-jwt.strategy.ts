@@ -8,7 +8,10 @@ import { GoogleStrategyHelper } from './base-google.strategy';
 @Injectable()
 export class GoogleJwtStrategy extends PassportStrategy(Strategy, 'google-jwt') {
   constructor(configService: ConfigService) {
-    super(GoogleStrategyHelper.getStrategyOptions(configService, '/auth/google/jwt/callback'));
+    const baseUrl = configService.get<string>('BASE_URL', 'http://localhost:8080');
+    super(
+      GoogleStrategyHelper.getStrategyOptions(configService, `${baseUrl}/auth/jwt/google/callback`),
+    );
   }
 
   validate(

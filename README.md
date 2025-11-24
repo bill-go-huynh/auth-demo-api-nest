@@ -156,6 +156,7 @@ $ cp .env.example .env
 
 - `NODE_ENV` - Environment (development, production, test) - Default: `development`
 - `PORT` - Server port - Default: `8080`
+- `BASE_URL` - Base URL of the API server - Default: `http://localhost:8080` (used for OAuth callback URLs)
 - `DB_HOST` - Database host - Default: `localhost` (use `postgres` if connecting from Docker network)
 - `DB_PORT` - Database port - Default: `5432`
 - `DB_USERNAME` - Database username - Default: `postgres`
