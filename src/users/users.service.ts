@@ -66,13 +66,11 @@ export class UsersService {
       });
 
       if (user) {
-        if (user.googleId && user.googleId !== profile.id) {
-          throw new ConflictException(
-            'Email is already associated with a different Google account',
-          );
+        if (!user.googleId || user.googleId !== profile.id) {
+          user.googleId = profile.id;
+          return userRepository.save(user);
         }
-        user.googleId = profile.id;
-        return userRepository.save(user);
+        return user;
       }
 
       const createUserData: CreateUserDto = {
