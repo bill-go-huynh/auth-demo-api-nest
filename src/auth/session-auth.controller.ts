@@ -66,21 +66,32 @@ export class SessionAuthController {
     type: UserProfileResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async getLogin(@Request() req: AuthenticatedRequest): Promise<UserProfileResponseDto> {
+  async getLogin(
+    @Request() req: AuthenticatedRequest & SessionRequest,
+    @Res() res: Response,
+  ): Promise<void> {
     const user = await this.usersService.findById(req.user.id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        googleId: user.googleId,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      },
-    };
+
+    req.login({ id: user.id, email: user.email }, (err?: Error) => {
+      if (err) {
+        res.status(500).json({ message: 'Login failed' });
+        return;
+      }
+
+      res.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          googleId: user.googleId,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+      });
+    });
   }
 
   @Post('logout')
