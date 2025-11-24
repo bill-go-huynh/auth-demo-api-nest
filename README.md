@@ -37,7 +37,7 @@
 
 - **User Management**:
   - User registration and login
-  - Password hashing with bcrypt (automatic via entity hooks)
+  - Password hashing with bcryptjs (automatic via entity hooks)
   - User profile management
 
 - **Tasks Management**:
@@ -214,7 +214,7 @@ $ pnpm run test:cov
 - **Session Management**: express-session
 - **Validation**: class-validator, class-transformer
 - **API Documentation**: Swagger/OpenAPI
-- **Password Hashing**: bcrypt
+- **Password Hashing**: bcryptjs (pure JavaScript, no native dependencies)
 
 ## Authentication Flow
 
