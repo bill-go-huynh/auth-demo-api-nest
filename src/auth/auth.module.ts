@@ -10,6 +10,6 @@ import { CompositeAuthGuard } from './guards/auth.guard';
 @Module({
   imports: [UsersModule, forwardRef(() => JwtAuthModule), forwardRef(() => SessionAuthModule)],
   providers: [AuthService, CompositeAuthGuard],
-  exports: [AuthService, CompositeAuthGuard],
+  exports: [AuthService, CompositeAuthGuard, JwtAuthModule, SessionAuthModule],
 })
 export class AuthModule {}
