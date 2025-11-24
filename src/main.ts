@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import session from 'express-session';
-import passport from 'passport';
 
 import { AppModule } from './app.module';
 
@@ -43,13 +42,6 @@ async function bootstrap() {
       },
     }),
   );
-
-  const passportInstance = passport as {
-    initialize: () => ReturnType<typeof app.use>;
-    session: () => ReturnType<typeof app.use>;
-  };
-  app.use(passportInstance.initialize());
-  app.use(passportInstance.session());
 
   // Global validation pipe
   app.useGlobalPipes(
