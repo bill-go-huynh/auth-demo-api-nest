@@ -1,11 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 
-import { BaseGoogleStrategy } from './base-google.strategy';
+import { GoogleStrategyHelper } from './base-google.strategy';
 
 @Injectable()
-export class GoogleSessionStrategy extends BaseGoogleStrategy {
+export class GoogleSessionStrategy extends PassportStrategy(Strategy, 'google-session') {
   constructor(configService: ConfigService) {
-    super(configService, 'google-session', '/auth/google/session/callback');
+    super(GoogleStrategyHelper.getStrategyOptions(configService, '/auth/google/session/callback'));
+  }
+
+  validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: unknown,
+    done: VerifyCallback,
+  ): void {
+    return GoogleStrategyHelper.validate(accessToken, refreshToken, profile, done);
   }
 }

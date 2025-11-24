@@ -1,19 +1,16 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { VerifyCallback } from 'passport-google-oauth20';
 
 import { GoogleUserProfile } from '@auth/types/auth.types';
 import { createError, isError } from '@auth/types/passport.types';
 import { extractGoogleProfile } from '@auth/types/type-helpers';
 
-@Injectable()
-export abstract class BaseGoogleStrategy extends PassportStrategy(Strategy) {
-  constructor(
-    protected readonly configService: ConfigService,
-    strategyName: string,
+export class GoogleStrategyHelper {
+  static getStrategyOptions(
+    configService: ConfigService,
     callbackURL: string,
-  ) {
+  ): { clientID: string; clientSecret: string; callbackURL: string; scope: string[] } {
     const clientID = configService.get<string>('GOOGLE_CLIENT_ID');
     const clientSecret = configService.get<string>('GOOGLE_CLIENT_SECRET');
 
@@ -23,18 +20,15 @@ export abstract class BaseGoogleStrategy extends PassportStrategy(Strategy) {
       );
     }
 
-    super(
-      {
-        clientID,
-        clientSecret,
-        callbackURL,
-        scope: ['email', 'profile'],
-      },
-      strategyName,
-    );
+    return {
+      clientID,
+      clientSecret,
+      callbackURL,
+      scope: ['email', 'profile'],
+    };
   }
 
-  validate(
+  static validate(
     accessToken: string,
     refreshToken: string,
     profile: unknown,

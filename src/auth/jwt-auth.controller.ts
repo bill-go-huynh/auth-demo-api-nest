@@ -121,7 +121,8 @@ export class JwtAuthController {
     });
 
     const redirectUrl = new URL(
-      this.configService.get<string>('GOOGLE_JWT_REDIRECT_URL') || 'http://localhost:3001',
+      this.configService.get<string>('GOOGLE_JWT_REDIRECT_URL') ||
+        'http://localhost:3001/oauth/callback',
     );
     redirectUrl.searchParams.set('accessToken', tokens.accessToken);
     if (tokens.refreshToken) {

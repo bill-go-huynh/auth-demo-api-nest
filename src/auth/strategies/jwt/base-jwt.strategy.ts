@@ -1,34 +1,28 @@
-import { Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, StrategyOptions } from 'passport-jwt';
+import { StrategyOptions } from 'passport-jwt';
 
 import { UserPayload } from '@auth/types/auth.types';
 import { isJwtPayload } from '@auth/types/type-guards';
 
-@Injectable()
-export abstract class BaseJwtStrategy extends PassportStrategy(Strategy) {
-  constructor(
-    protected readonly configService: ConfigService,
-    strategyName: string,
+export class JwtStrategyHelper {
+  static getStrategyOptions(
+    configService: ConfigService,
     secretKey: string,
     jwtFromRequest: StrategyOptions['jwtFromRequest'],
-  ) {
+  ): StrategyOptions {
     const secret = configService.get<string>(secretKey);
     if (!secret) {
       throw new InternalServerErrorException(`${secretKey} is not configured`);
     }
-    super(
-      {
-        jwtFromRequest,
-        ignoreExpiration: false,
-        secretOrKey: secret,
-      },
-      strategyName,
-    );
+    return {
+      jwtFromRequest,
+      ignoreExpiration: false,
+      secretOrKey: secret,
+    };
   }
 
-  validate(payload: unknown): UserPayload {
+  static validate(payload: unknown): UserPayload {
     if (!isJwtPayload(payload)) {
       throw new UnauthorizedException('Invalid JWT payload');
     }
