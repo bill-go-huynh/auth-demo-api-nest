@@ -8,7 +8,13 @@ import { GoogleStrategyHelper } from './base-google.strategy';
 @Injectable()
 export class GoogleSessionStrategy extends PassportStrategy(Strategy, 'google-session') {
   constructor(configService: ConfigService) {
-    super(GoogleStrategyHelper.getStrategyOptions(configService, '/auth/google/session/callback'));
+    const baseUrl = configService.get<string>('BASE_URL', 'http://localhost:8080');
+    super(
+      GoogleStrategyHelper.getStrategyOptions(
+        configService,
+        `${baseUrl}/auth/session/google/callback`,
+      ),
+    );
   }
 
   validate(
