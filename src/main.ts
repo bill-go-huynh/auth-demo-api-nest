@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import session from 'express-session';
+import passport from 'passport';
 
 import { AppModule } from './app.module';
 
@@ -23,6 +24,11 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
+  const expressApp = app.getHttpAdapter().getInstance() as {
+    set: (key: string, value: unknown) => void;
+  };
+  expressApp.set('trust proxy', 1);
+
   // Session configuration
   const sessionSecret = configService.get<string>('SESSION_SECRET');
   if (!sessionSecret) {
@@ -42,6 +48,13 @@ async function bootstrap() {
       },
     }),
   );
+
+  const passportInstance = passport as {
+    initialize: () => ReturnType<typeof app.use>;
+    session: () => ReturnType<typeof app.use>;
+  };
+  app.use(passportInstance.initialize());
+  app.use(passportInstance.session());
 
   // Global validation pipe
   app.useGlobalPipes(
