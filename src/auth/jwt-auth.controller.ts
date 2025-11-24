@@ -18,8 +18,9 @@ import type { Response } from 'express';
 import { AuthService } from '@auth/auth.service';
 import { LoginDto } from '@auth/dto/login.dto';
 import { RefreshDto } from '@auth/dto/refresh.dto';
+import { RegisterDto } from '@auth/dto/register.dto';
 import { TokenResponseDto } from '@auth/dto/token-response.dto';
-import { UserProfileResponseDto } from '@auth/dto/user-response.dto';
+import { UserProfileResponseDto, UserResponseDto } from '@auth/dto/user-response.dto';
 import type { AuthenticatedRequest, GoogleUserProfile } from '@auth/types/auth.types';
 import { UsersService } from '@users/users.service';
 
@@ -38,6 +39,28 @@ export class JwtAuthController {
     private usersService: UsersService,
     private configService: ConfigService,
   ) {}
+
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiBody({ type: RegisterDto })
+  @ApiResponse({
+    status: 201,
+    description: 'User successfully registered',
+    type: UserResponseDto,
+  })
+  @ApiResponse({ status: 409, description: 'User with this email already exists' })
+  async register(@Body() registerDto: RegisterDto): Promise<UserResponseDto> {
+    const user = await this.authService.register(registerDto);
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      googleId: user.googleId,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
 
   @UseGuards(AuthGuard('local-jwt'))
   @Post('login')
