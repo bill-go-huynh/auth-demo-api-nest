@@ -24,11 +24,6 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  const expressApp = app.getHttpAdapter().getInstance() as {
-    set: (key: string, value: unknown) => void;
-  };
-  expressApp.set('trust proxy', 1);
-
   // Session configuration
   const sessionSecret = configService.get<string>('SESSION_SECRET');
   if (!sessionSecret) {
